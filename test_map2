@@ -1,0 +1,13 @@
+L=5
+C=5
+D=-0.04
+. . . . .
+X . X . .
+. . X X .
+. . X X .
+. . . . .
+D D -1 D +10
+X D X D D
+D D X X D
+D -1 X X D
+D D D D D
