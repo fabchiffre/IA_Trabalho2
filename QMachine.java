@@ -24,7 +24,7 @@ class QMachine {
 	}
 
 	public void QLearn(int nbIter) {
-		
+
 		for (int iter = 0; iter< nbIter; iter++) {
 			State current = board[board.length - 2][1];
 			while(current.reward == defaultReward) 
@@ -47,12 +47,12 @@ class QMachine {
 
 	public void displayAction() {
 		for(int i=0; i<board.length; ++i) {
-			
+
 			for(int j=0; j<board[0].length; ++j)
 				System.out.print("_______");
 			System.out.print("\n");
 
-			
+
 			for(int j=0; j<board[0].length; ++j) {
 				if(j == 0)
 					System.out.print("|");
@@ -62,19 +62,19 @@ class QMachine {
 				}
 
 				else {
-					switch(board[i][j].chooseBestAction()) {
+					switch(board[i][j].actionToDo()) {
 						case 0:
-						System.out.print("RIGHT |");
-						break;
+							System.out.print("RIGHT |");
+							break;
 						case 1:
-						System.out.print(" TOP  |");
-						break;
+							System.out.print(" TOP  |");
+							break;
 						case 2:
-						System.out.print(" LEFT |");
-						break;
+							System.out.print(" LEFT |");
+							break;
 						case 3:
-						System.out.print(" BOT  |");
-						break;
+							System.out.print(" BOT  |");
+							break;
 					}
 				}
 			}
@@ -98,20 +98,9 @@ class QMachine {
 		public void initNext(State[][] q, int i, int j) {
 			if(this != NULL_STATE) {
 				this.next[NORTH] = q[i-1][j];
-				if(this.next[NORTH] == NULL_STATE)
-					value[NORTH] = Double.NEGATIVE_INFINITY;
-
 				this.next[SOUTH] = q[i+1][j];
-				if(this.next[SOUTH] == NULL_STATE)
-					value[SOUTH] = Double.NEGATIVE_INFINITY;
-
 				this.next[EAST] = q[i][j+1];
-				if(this.next[EAST] == NULL_STATE)
-					value[EAST] = Double.NEGATIVE_INFINITY;
-
 				this.next[WEST] = q[i][j-1];
-				if(this.next[WEST] == NULL_STATE)
-					value[WEST] = Double.NEGATIVE_INFINITY;
 			}
 		}
 
@@ -123,25 +112,49 @@ class QMachine {
 			return max_index;
 		}
 
-		public int chooseNextAction() {	
-			int dir;
-			while (true) {
-				dir =  randGen.nextInt( Integer.MAX_VALUE ) % 4;
-
-				if (this.next[dir] != NULL_STATE)
-					break;
+		public int actionToDo() {
+			int max_index = -1;
+			for(int i=0; i<4; ++i) { 
+				if(next[i] != NULL_STATE) {
+					if(max_index == -1)
+						max_index = i;
+					else	
+						max_index = (value[i] > value[max_index]) ? i : max_index;
+				}
 			}
-			return dir;
+			return max_index;
 		}
+
+		public int chooseNextAction() {	
+			if(Math.random()  < 0.75) 
+				return  chooseBestAction();
+
+			return randGen.nextInt( Integer.MAX_VALUE ) % 4;	
+		}
+
+		public State getNextState(int dir) {
+			State nextState;
+			double r = Math.random();
+			if( r < 0.8 )
+				nextState = next[dir];
+			else if( r < 0.9 )
+				nextState = next[(dir == 0 ? 3 : dir - 1)];
+			else
+				nextState = next[(dir + 1) % 4];
+
+			if( nextState == NULL_STATE )
+				nextState = this;
+
+			return nextState;
+		}
+
 
 		public double getNextMaxValue() {
 			double max  = 0;
-			if(this != NULL_STATE) {
-				max = this.value[0];
-				for (int i =1; i<4; ++i) {
-					if (max < this.value[i]) {
-						max = this.value[i];
-					}
+			max = this.value[0];
+			for (int i =1; i<4; ++i) {
+				if (max < this.value[i]) {
+					max = this.value[i];
 				}
 			}
 			return max;
@@ -155,25 +168,9 @@ class QMachine {
 
 		public State updateQ(double alpha, double gamma) {
 			int dir = this.chooseNextAction();
-			State nextState = this.next[dir];
-			double max = 0.8 * nextState.getNextMaxValue();
-			double r = 0.8 * nextState.getReward();
-
-			if( this.next[(dir + 1)%4] != NULL_STATE) {
-				max +=  0.1 * this.next[(dir + 1)%4].getNextMaxValue();
-				r +=  0.1 * this.next[(dir + 1)%4].getReward();
-			} else {
-				max +=  0.1 * this.getNextMaxValue();
-				r +=  0.1 * this.getReward();
-			}
-
-			if(this.next[(dir == 0 ? 3 : dir-1)] != NULL_STATE) {
-				max += 0.1 * this.next[(dir == 0 ? 3 : dir-1)].getNextMaxValue();
-				r += 0.1 * this.next[(dir == 0 ? 3 : dir-1)].getReward();
-			} else {
-				max +=  0.1 * this.getNextMaxValue();
-				r +=  0.1 * this.getReward();
-			}
+			State nextState = this.getNextState(dir);
+			double max = nextState.getNextMaxValue();
+			double r = nextState.getReward();
 
 			this.value[dir]  = (1-alpha) * this.value[dir] + alpha * (r + gamma * max - this.value[dir]);
 
@@ -182,7 +179,7 @@ class QMachine {
 	}
 
 	public static void main(String args[]) {
-		QMachine machine = new QMachine(0.8, 0.9);
+		QMachine machine = new QMachine(0.9, 0.25);
 		QParser parser = new QParser(args[0]);
 		parser.parseMap();
 
