@@ -153,7 +153,7 @@ class QMachine {
 		}
 
 		public int chooseNextAction(double coefExploration) {	
-			if(Math.random()  < coefExploration) 
+			if(Math.random()  > coefExploration) 
 				return  chooseBestAction();
 
 			return randGen.nextInt( Integer.MAX_VALUE ) % 4;	
@@ -199,7 +199,7 @@ class QMachine {
 			double max = nextState.getNextMaxValue();
 			double r = nextState.getReward();
 
-			this.value[dir]  = (1-alpha) * this.value[dir] + alpha * (r + gamma * max - this.value[dir]);
+			this.value[dir]  = (1-alpha) * this.value[dir] + alpha * (r + gamma * max);
 
 			return nextState;
 		}
