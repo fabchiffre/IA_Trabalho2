@@ -32,6 +32,7 @@ class QMachine {
 			countStep = 0;
 			double coefExploration = computeCoefExploration(iter);
 			State current = board[board.length - 2][1];
+			System.out.println(coefExploration);
 			while(current.reward == defaultReward) {
 				current = current.updateQ(this.alpha, this.gamma, coefExploration);
 				countStep++;
@@ -47,8 +48,8 @@ class QMachine {
 		double b = 2;
 		double a =  10;
 
-		// double coef = (1 - Math.tanh(iter/ s -2))/2;
-		double coef = (1 - Math.tanh(b*iter/ s - b * a))/2;
+		double coef = (1 - Math.tanh(iter/ s -2))/2;
+		//double coef = (1 - Math.tanh(b*iter/ s - b * a))/2;
 
 		coef = coef * 0.9 + 0.1;
 		// System.out.println(coef);
