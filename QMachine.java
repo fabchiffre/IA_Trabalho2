@@ -18,7 +18,9 @@ class QMachine {
 	private static final int WEST = 2;
 	private static final int SOUTH = 3;
 
-	public QMachine(double gamma, double alpha) {
+	private static final double GAMMA = 0.9;
+
+	public QMachine(double alpha, double gamma) {
 		this.alpha = alpha;
 		this.gamma = gamma;
 	}
@@ -184,7 +186,7 @@ class QMachine {
 	}
 
 	public static void main(String args[]) {
-		QMachine machine = new QMachine(0.9, 0.25);
+		QMachine machine = new QMachine(Double.parseDouble(args[2]), GAMMA);
 		QParser parser = new QParser(args[0]);
 		parser.parseMap();
 
