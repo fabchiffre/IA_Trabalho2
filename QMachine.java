@@ -24,11 +24,16 @@ class QMachine {
 	}
 
 	public void QLearn(int nbIter) {
-
+		int countStep = 0;
 		for (int iter = 0; iter< nbIter; iter++) {
+			countStep = 0;
 			State current = board[board.length - 2][1];
-			while(current.reward == defaultReward) 
+			while(current.reward == defaultReward) {
 				current = current.updateQ(this.alpha, this.gamma);
+				countStep++;
+			}
+
+			System.err.println(iter +";" + countStep);
 		}
 	}
 
