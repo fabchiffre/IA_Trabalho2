@@ -7,6 +7,7 @@ class QMachine {
 	// private double n;
 	// private double m;
 	private State[][] board;
+
 	private double defaultReward;
 
 	public final static State NULL_STATE = new State(Double.NEGATIVE_INFINITY);
@@ -29,14 +30,29 @@ class QMachine {
 		int countStep = 0;
 		for (int iter = 0; iter< nbIter; iter++) {
 			countStep = 0;
+			double coefExploration = computeCoefExploration(iter);
 			State current = board[board.length - 2][1];
 			while(current.reward == defaultReward) {
-				current = current.updateQ(this.alpha, this.gamma);
+				current = current.updateQ(this.alpha, this.gamma, coefExploration);
 				countStep++;
 			}
 
 			System.err.println(iter +";" + countStep);
 		}
+	}
+
+	private double computeCoefExploration(int iter) {
+		int s = getMazeSize();
+
+		double b = 2;
+		double a =  10;
+
+		// double coef = (1 - Math.tanh(iter/ s -2))/2;
+		double coef = (1 - Math.tanh(b*iter/ s - b * a))/2;
+
+		coef = coef * 0.9 + 0.1;
+		// System.out.println(coef);
+		return coef ;
 	}
 
 	public void setBoard(State[][] board) {
@@ -45,6 +61,10 @@ class QMachine {
 
 	public State[][] getBoard() {
 		return board;
+	}
+
+	public int getMazeSize() {
+		return board.length * board[0].length;
 	}
 
 	public void setDefaultReward(double defaultReward) {
@@ -71,17 +91,17 @@ class QMachine {
 				else {
 					switch(board[i][j].actionToDo()) {
 						case 0:
-							System.out.print("RIGHT |");
-							break;
+						System.out.print("RIGHT |");
+						break;
 						case 1:
-							System.out.print(" TOP  |");
-							break;
+						System.out.print(" TOP  |");
+						break;
 						case 2:
-							System.out.print(" LEFT |");
-							break;
+						System.out.print(" LEFT |");
+						break;
 						case 3:
-							System.out.print(" BOT  |");
-							break;
+						System.out.print(" BOT  |");
+						break;
 					}
 				}
 			}
@@ -132,8 +152,8 @@ class QMachine {
 			return max_index;
 		}
 
-		public int chooseNextAction() {	
-			if(Math.random()  < 0.75) 
+		public int chooseNextAction(double coefExploration) {	
+			if(Math.random()  < coefExploration) 
 				return  chooseBestAction();
 
 			return randGen.nextInt( Integer.MAX_VALUE ) % 4;	
@@ -173,8 +193,8 @@ class QMachine {
 			return reward;
 		}
 
-		public State updateQ(double alpha, double gamma) {
-			int dir = this.chooseNextAction();
+		public State updateQ(double alpha, double gamma, double coefExploration) {
+			int dir = this.chooseNextAction(coefExploration);
 			State nextState = this.getNextState(dir);
 			double max = nextState.getNextMaxValue();
 			double r = nextState.getReward();
